@@ -1,0 +1,22 @@
+{% load filters %}
+{% load static %}
+{% block content %}
+
+{% for comment in comment|replies  %}
+    <ul class="children">
+        <li class="comment">
+            <div class="vcard bio">
+                <img src="{{comment.user.avatar}}" alt="Image placeholder">
+            </div>
+            <div class="comment-body">
+                <h3>{{comment.user}}</h3>
+                <div class="meta">{{ comment.created_at|date:"F d, Y"}} at {{ comment.created_at|date:"f A"}}</div>
+                {{comment.comment_msg}}
+                <p><a href="#" class="reply">Reply</a></p>
+            </div>
+            {% include 'includes/comments.html'%}
+        </li>
+    </ul>
+    
+{% endfor %}
+{% endblock %}
