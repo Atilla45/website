@@ -98,7 +98,7 @@ class EmailSub(models.Model):
 
 
 class Comments(models.Model):
-    user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='comments')
+    user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='comments',null=True, blank=True)
     recipe=models.ForeignKey(Recipe,on_delete=models.CASCADE,related_name='comments',null=True, blank=True)
     story=models.ForeignKey(Story,on_delete=models.CASCADE,related_name='comments',null=True, blank=True)
     comment_msg=models.TextField('Comment', max_length=1001)

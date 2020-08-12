@@ -1,5 +1,7 @@
 from django import forms
-from stories.models import Contact,EmailSub,Story
+from stories.models import Contact,EmailSub,Story,Comments
+from django.forms import TextInput
+
 class ContactForm(forms.ModelForm):
     class Meta:
         model=Contact
@@ -61,3 +63,26 @@ class StoryForm(forms.ModelForm):
                 'placeholder': 'Category',
             }),
         }
+
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model=Comments
+        fields='__all__'
+        widgets=({
+            'comment_msg':forms.Textarea(attrs={
+                'class':'form-control',
+                'placeholder':'Message',
+                
+            }),
+            'user': forms.TextInput(attrs={'readonly': 'readonly'}),
+        })
+    def update(self, request,user):
+        if request.method == "POST":
+            form=CommentForm({'user': request.user})
+            if form.is_valid():
+                user = request.user
+                form.save()
+                return redirect('/')
+            else:
+                return redirect('/recipes')

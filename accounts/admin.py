@@ -3,11 +3,11 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserCreationForm
 from accounts.models import UserModel
 from accounts.forms import Registerform
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.utils.translation import gettext, gettext_lazy as _
 
 
-User=get_user_model()
+# User=get_user_model()
 
 
 class UserAdmin(UserAdmin):

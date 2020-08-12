@@ -1,11 +1,12 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,reverse
 from stories.models import Recipe,Category,Story,EmailSub,Contact,Comments
 from datetime import datetime
-from stories.forms import ContactForm,EmailForm,StoryForm
+from stories.forms import ContactForm,EmailForm,StoryForm,CommentForm
 from django.contrib import messages
 from django.views.generic import CreateView,ListView,DetailView
 from stories.tasks import dump_celery
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import FormMixin
 
 
 
@@ -35,8 +36,8 @@ def about(request):
 
 
 
-def user_profile(request):
-    return render(request,'user-profile.html')
+def dump_celery(request):
+    return render(request,'dump_celery.html')
 
 
 class Create_StoryView(CreateView):
@@ -87,21 +88,53 @@ class RecipeList(ListView):
     context_object_name='recipes'
 
 
-class RecipeDetails(DetailView):
+class RecipeDetails(FormMixin,DetailView,):
     model=Recipe
     template_name='single.html'
     context_object_name='recipe'
-    
+    form_class=CommentForm
+
+    def get_success_url(self):
+        return reverse("home")
+
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # all recipes
+        context = super(RecipeDetails, self).get_context_data(**kwargs)
+        context["forms"] = self.get_form()
         recipe=self.object
         context['comments'] = recipe.comments.filter(parent_msg__isnull=True)
-        # context['replies']=recipe.comments.filter(parent_msg__isnull=False)
-        
         
         return context
 
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        print(self.request.user)
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self,form):
+        user=self.request.user
+        print(user)
+        form.instance.user=user
+        form.save()
+        return super().form_valid(form)
+
+
+
+    # def update(self, request,user):
+    #     if request.method == "POST":
+    #         form=CommentForm({'user': request.user})
+    #         if form.is_valid():
+    #             user = request.user
+    #             form.save()
+    #             return redirect('/')
+    #         else:
+    #             return redirect('/recipes')
+
+    
+   
 
 
 class UserProfile(ListView,LoginRequiredMixin):
@@ -113,4 +146,6 @@ class UserProfile(ListView,LoginRequiredMixin):
         queryset=super().get_queryset()
         return queryset.filter(author=user)
 
-    
+
+class Comment_Mixin(DetailView,):
+    model=Comments
